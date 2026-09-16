@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X5 Field Companion</title>
+<meta name="description" content="Insta360 X5 Guide & Setup-Planner — offline, zweisprachig. Built by mindricS.">
+<!-- Fonts: CDN with system fallback (works offline if blocked) -->
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=space-grotesk@400,500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   X5 Field Companion — single-file app
+   Design system: Field / Outdoor aesthetic (see 04_DESIGN_BRAND.md)
+   ============================================================ */
+:root {
+  /* Dark theme (default) */
+  --bg:        #14201c;
+  --surface:   #1c2620;
+  --surface-2: #232f28;
+  --accent:    #d97757;  /* terracotta / trail-marker */
+  --accent-2:  #8fae8b;  /* sage */
+  --text:      #ece6da;
+  --text-dim:  #8a9389;
+  --border:    rgba(255,255,255,0.08);
+  --accent-soft: rgba(217,119,87,0.14);
+  --sage-soft:   rgba(143,174,139,0.14);
+  --warn:      #e0b15a;
+  --warn-soft: rgba(224,177,90,0.14);
+  --shadow:    0 8px 30px rgba(0,0,0,0.35);
+
+  --font-head: "Space Grotesk", "Archivo", system-ui, sans-serif;
+  --font-body: "Satoshi", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --sidebar-w: 264px;
+  --maxw: 1100px;
+}
+:root[data-theme="light"] {
+  --bg:        #f3efe6;
+  --surface:   #ffffff;
+  --surface-2: #ece6da;
+  --accent:    #c25f3f;
+  --accent-2:  #5f7d5b;
+  --text:      #23302a;
+  --text-dim:  #6a7468;
+  --border:    rgba(0,0,0,0.10);
+  --accent-soft: rgba(194,95,63,0.12);
+  --sage-soft:   rgba(95,125,91,0.12);
+  --warn:      #a9772a;
+  --warn-soft: rgba(169,119,42,0.14);
+  --shadow:    0 8px 30px rgba(0,0,0,0.10);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+h1,h2,h3,h4 { font-family: var(--font-head); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, .mono { font-family: var(--font-mono); }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 50;
+}
+.brand {
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand .logo {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 9px;
+}
+.brand .logo .mark {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), #b85c3e);
+  display: grid; place-items: center;
+  color: #fff; font-size: 14px; flex-shrink: 0;
+}
+.brand .tag { color: var(--text-dim); font-size: 12px; margin-top: 4px; }
+
+.nav { padding: 12px 12px; flex: 1; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  color: var(--text-dim); cursor: pointer;
+  font-weight: 500; font-size: 14.5px;
+  border: 1px solid transparent;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active {
+  background: var(--accent-soft); color: var(--text);
+  border-color: rgba(217,119,87,0.30);
+}
+.nav-item .ico { width: 18px; text-align: center; opacity: .9; }
+
+.sidebar-bottom {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.toggle-row { display: flex; gap: 8px; }
+.seg {
+  flex: 1; display: flex;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 3px; gap: 3px;
+}
+.seg button {
+  flex: 1; border: none; background: transparent;
+  color: var(--text-dim); cursor: pointer;
+  font-family: var(--font-body); font-weight: 600; font-size: 12.5px;
+  padding: 6px 0; border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+.seg button.on { background: var(--accent); color: #fff; }
+.seg-label { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .06em; }
+.credit { font-size: 12px; color: var(--text-dim); }
+.credit a { font-weight: 600; }
+
+/* ---------- Main ---------- */
+.main { margin-left: var(--sidebar-w); min-width: 0; }
+.content { max-width: var(--maxw); margin: 0 auto; padding: 40px 40px 80px; }
+.page { display: none; }
+.page.active { display: block; animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.page-head { margin-bottom: 26px; }
+.page-head h1 { font-size: 30px; }
+.page-head p { color: var(--text-dim); margin-top: 8px; max-width: 60ch; }
+.eyebrow {
+  color: var(--accent); font-weight: 600; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .09em; margin-bottom: 8px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+.card h2 { font-size: 20px; margin-bottom: 4px; }
+.card h3 { font-size: 16px; margin: 18px 0 8px; }
+.card .sub { color: var(--text-dim); font-size: 13.5px; margin-bottom: 14px; }
+.card p { margin-bottom: 10px; }
+.card ul, .card ol { margin: 8px 0 12px 20px; }
+.card li { margin-bottom: 6px; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 18px; }
+
+/* ---------- Tables ---------- */
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 6px 0 4px; }
+table.tbl th, table.tbl td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.tbl th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+table.tbl tr:last-child td { border-bottom: none; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+
+/* ---------- Info / tip / warn boxes ---------- */
+.box { border-radius: var(--radius-sm); padding: 13px 15px; margin: 12px 0; font-size: 14px; border: 1px solid var(--border); }
+.box.tip  { background: var(--sage-soft);   border-color: rgba(143,174,139,.3); }
+.box.warn { background: var(--warn-soft);   border-color: rgba(224,177,90,.35); }
+.box.info { background: var(--accent-soft); border-color: rgba(217,119,87,.28); }
+.box .lbl { font-weight: 700; font-family: var(--font-head); font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; display:block; margin-bottom: 4px; }
+.box.tip .lbl  { color: var(--accent-2); }
+.box.warn .lbl { color: var(--warn); }
+.box.info .lbl { color: var(--accent); }
+
+/* ---------- Scene grid ---------- */
+.scene-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; }
+.scene-tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 14px; cursor: pointer;
+  transition: border-color .15s, transform .1s; text-align: left;
+}
+.scene-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+.scene-tile .emoji { font-size: 22px; }
+.scene-tile .name { font-family: var(--font-head); font-weight: 600; margin-top: 8px; font-size: 14.5px; }
+
+/* ---------- Planner ---------- */
+.stepper { display: flex; flex-wrap: wrap; gap: 18px; }
+.qblock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; flex: 1 1 240px; }
+.qblock.disabled { opacity: .45; pointer-events: none; }
+.qblock .qtitle { font-family: var(--font-head); font-weight: 600; font-size: 14px; margin-bottom: 12px; display:flex; align-items:center; gap:8px; }
+.qblock .qnum { background: var(--accent-soft); color: var(--accent); width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.opts { display: flex; flex-direction: column; gap: 7px; }
+.opt {
+  border: 1px solid var(--border); background: var(--surface-2);
+  border-radius: var(--radius-sm); padding: 9px 12px; cursor: pointer;
+  font-size: 13.5px; color: var(--text); text-align: left;
+  font-family: var(--font-body); transition: border-color .12s, background .12s;
+}
+.opt:hover { border-color: var(--accent); }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.opt .lock { float: right; color: var(--text-dim); font-size: 11px; }
+
+.planner-actions { display: flex; gap: 12px; margin: 22px 0 8px; align-items: center; flex-wrap: wrap; }
+.btn {
+  font-family: var(--font-head); font-weight: 600; font-size: 14px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 20px; cursor: pointer; background: var(--surface-2); color: var(--text);
+  transition: filter .12s, background .12s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------- Result card ---------- */
+.result { margin-top: 8px; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin: 8px 0 16px; }
+.setting {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.setting .k { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
+.setting .v { font-family: var(--font-mono); font-size: 14.5px; margin-top: 4px; font-weight: 500; }
+.setting .v.accent { color: var(--accent); }
+.badge { display:inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+.badge.on  { background: var(--sage-soft); color: var(--accent-2); }
+.badge.off { background: var(--surface-2); color: var(--text-dim); }
+
+/* ---------- Checklist ---------- */
+.checklist { list-style: none; margin: 4px 0; }
+.checklist li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.checklist li:last-child { border-bottom: none; }
+.checklist input { margin-top: 4px; accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+.checklist label { cursor: pointer; }
+.checklist .done label { text-decoration: line-through; color: var(--text-dim); }
+
+/* ---------- Mobile bottom nav ---------- */
+.mobile-nav { display: none; }
+.mobile-bar { display: none; }
+
+@media (max-width: 820px) {
+  body { padding-bottom: 64px; }
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 22px 18px 60px; }
+  .page-head h1 { font-size: 24px; }
+  .mobile-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 30;
+  }
+  .mobile-bar .logo { font-family: var(--font-head); font-weight: 700; font-size: 16px; display:flex; gap:8px; align-items:center; }
+  .mobile-bar .logo .mark { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg,var(--accent),#b85c3e); color:#fff; display:grid; place-items:center; font-size:12px; }
+  .mobile-bar .controls { display: flex; gap: 8px; }
+  .mobile-bar .seg { width: auto; }
+  .mobile-nav {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    background: var(--surface); border-top: 1px solid var(--border);
+  }
+  .mobile-nav .nav-item {
+    flex: 1; flex-direction: column; gap: 3px; font-size: 10.5px;
+    padding: 8px 2px; border-radius: 0; justify-content: center;
+  }
+  .mobile-nav .nav-item.active { background: var(--accent-soft); }
+  .mobile-nav .nav-item .ico { width: auto; font-size: 17px; }
+  .stepper { flex-direction: column; }
+}
+.footer-note { color: var(--text-dim); font-size: 12.5px; margin-top: 30px; text-align: center; }
+
+/* ---------- Chapter chip nav (guide) ---------- */
+.chapter-nav {
+  display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 22px;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg); padding: 10px 0; border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.chapter-nav::-webkit-scrollbar { height: 6px; }
+.chapter-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+.chip {
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-dim); border-radius: 99px; padding: 6px 13px;
+  font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; flex: 0 0 auto;
+  font-family: var(--font-body); transition: border-color .12s, color .12s, background .12s;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.active { background: var(--accent); color: #fff; border-color: transparent; }
+.card[id^="sec-"] { scroll-margin-top: 78px; }
+.scene-back { margin-bottom: 14px; }
+.scene-detail-head { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; }
+.scene-detail-head .emoji { font-size: 30px; }
+.scene-detail-head h3 { font-size: 19px; margin: 0; }
+.scene-detail-head .sub { color: var(--text-dim); font-size: 13px; margin: 2px 0 0; }
+@media (max-width: 820px) { .chapter-nav { position: static; } }
+</style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="mobile-bar">
+  <div class="logo"><span class="mark">X5</span> Field Companion</div>
+  <div class="controls">
+    <div class="seg" id="m-lang"></div>
+    <div class="seg" id="m-theme"></div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo"><span class="mark">X5</span> Field Companion</div>
+    <div class="tag" data-i18n="tagline"></div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="sidebar-bottom">
+    <div>
+      <div class="seg-label" data-i18n="language"></div>
+      <div class="seg" id="s-lang"></div>
+    </div>
+    <div>
+      <div class="seg-label" data-i18n="theme"></div>
+      <div class="seg" id="s-theme"></div>
+    </div>
+    <div class="credit">
+      <span data-i18n="builtby"></span> <a href="https://linktr.ee/mindrics" target="_blank" rel="noopener">mindricS</a>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="content" id="content"></div>
+</main>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" id="mnav"></nav>
+
+<script>
+"use strict";
+/* ============================================================
+   1. i18n helper — every text value is { de, en }
+   ============================================================ */
+const tx = (o) => (o && typeof o === "object" && "de" in o) ? (o[state.lang] || o.de) : o;
+
+/* ============================================================
+   2. UI strings (chrome)
+   ============================================================ */
+const S = {
+  tagline:  { de: "Insta360 X5 — Guide & Setup-Planner", en: "Insta360 X5 — Guide & Setup Planner" },
+  language: { de: "Sprache", en: "Language" },
+  theme:    { de: "Ansicht", en: "Theme" },
+  builtby:  { de: "Gebaut von", en: "Built by" },
+  dark:     { de: "Dunkel", en: "Dark" },
+  light:    { de: "Hell",   en: "Light" },
+};
+
+/* ============================================================
+   3. Navigation definition
+   ============================================================ */
+const NAV = [
+  { id: "guide",     ico: "📖", label: { de: "Guide",            en: "Guide" } },
+  { id: "planner",   ico: "🎚️", label: { de: "Setup-Planner",    en: "Setup Planner" } },
+  { id: "cheatsheet",ico: "📋", label: { de: "Cheatsheet",       en: "Cheatsheet" } },
+  { id: "postshoot", ico: "✅", label: { de: "Nach dem Dreh",    en: "After the Shoot" } },
+];
+
+/* ============================================================
+   4. App state
+   ============================================================ */
+const state = {
+  lang: localStorage.getItem("x5_lang") || "de",
+  theme: localStorage.getItem("x5_theme") || "dark",
+  route: "guide",
+  sceneOpen: null,
+  planner: { vorhaben: null, tageszeit: null, umgebung: null, montage: null },
+  checks: JSON.parse(localStorage.getItem("x5_checks") || "{}"),
+};
+
+/* Planner data, guide content and render functions are loaded from the
+   blocks below (defined later in this file). */
+</script>
+
+<!-- Planner logic + content are injected here by subsequent script blocks -->
+<script>
+/* ============================================================
+   5. PLANNER — Layered rules (see 02_PLANNER_LOGIC.md)
+   Layer 1 = base data; Layer 2/3 = functions that mutate result.
+   ============================================================ */
+
+/* Input option labels */
+const PLANNER_OPTS = {
+  vorhaben: [
+    { id: "bike",         label: { de: "Bike-Tour / Action-Sport",        en: "Bike Tour / Action Sport" } },
+    { id: "concert",      label: { de: "Konzert / Event",                 en: "Concert / Event" } },
+    { id: "nature",       label: { de: "Natur & Landschaft",              en: "Nature & Landscape" } },
+    { id: "architecture", label: { de: "Architektur & Innenraum",         en: "Architecture & Interior" } },
+    { id: "astro",        label: { de: "Sternenhimmel / Astro",           en: "Starry Sky / Astro" } },
+    { id: "vlog",         label: { de: "Interview / Vlog / Talking-Head", en: "Interview / Vlog / Talking-Head" } },
+    { id: "street",       label: { de: "Straßenszene / Street",           en: "Street Scene / Street" } },
+    { id: "water",        label: { de: "Wasser / Strand / Pool",          en: "Water / Beach / Pool" } },
+  ],
+  tageszeit: [
+    { id: "day",   label: { de: "Tageslicht",               en: "Daylight" } },
+    { id: "dusk",  label: { de: "Dämmerung / Golden Hour",  en: "Dusk / Golden Hour" } },
+    { id: "night", label: { de: "Nacht",                    en: "Night" } },
+  ],
+  umgebung: [
+    { id: "outdoor", label: { de: "Outdoor", en: "Outdoor" } },
+    { id: "indoor",  label: { de: "Indoor",  en: "Indoor" } },
+  ],
+  montage: [
+    { id: "tripod",      label: { de: "Stativ (statisch)",        en: "Tripod (static)" } },
+    { id: "handheld",    label: { de: "Handheld",                 en: "Handheld" } },
+    { id: "helmet",      label: { de: "Helm-Mount",               en: "Helmet Mount" } },
+    { id: "chest",       label: { de: "Brust-Mount",              en: "Chest Mount" } },
+    { id: "handlebar",   label: { de: "Lenker-Mount (Bike)",      en: "Handlebar Mount (Bike)" } },
+    { id: "selfiestick", label: { de: "Unsichtbarer Selfie Stick", en: "Invisible Selfie Stick" } },
+  ],
+};
+
+const MODE_360   = { de: "360°", en: "360°" };
+const MODE_SINGLE= { de: "Einzelobjektiv", en: "Single-Lens" };
+
+/* ---- Layer 1: base settings by time|env ---- */
+const LAYER1 = {
+  "day|outdoor": {
+    aufnahmemodus: MODE_360, auflösung: "8K", fps: "30",
+    iso_range: { de: "Auto (bleibt niedrig)", en: "Auto (stays low)" },
+    verschlusszeit: { de: "Auto", en: "Auto" },
+    weißabgleich: { de: "Auto / 5500K", en: "Auto / 5500K" },
+    anti_flicker: false,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Optional", en: "Optional" },
+    fov: null, tipps: [],
+  },
+  "day|indoor": {
+    aufnahmemodus: MODE_360, auflösung: "8K", fps: "30",
+    iso_range: "400–1600", verschlusszeit: "1/30–1/60s",
+    weißabgleich: { de: "Manuell je Lichtquelle", en: "Manual per light source" },
+    anti_flicker: true,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Optional", en: "Optional" },
+    fov: null,
+    tipps: [{ de: "Anti-Flicker gegen Kunstlicht-Flackern aktivieren.", en: "Enable anti-flicker against artificial-light flicker." }],
+  },
+  "dusk|outdoor": {
+    aufnahmemodus: MODE_360, auflösung: { de: "8K oder PureVideo (5.7K)", en: "8K or PureVideo (5.7K)" }, fps: "30",
+    iso_range: { de: "max. 1600 (manuell)", en: "max. 1600 (manual)" },
+    verschlusszeit: "1/30–1/60s", weißabgleich: "4000–5000K",
+    anti_flicker: false,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Stativ erhöht Qualität deutlich", en: "Tripod improves quality noticeably" },
+    fov: null,
+    tipps: [{ de: "Bei sehr wenig Licht PureVideo (5.7K) gegen 8K + hohes ISO testen.", en: "In very low light, test PureVideo (5.7K) vs. 8K + high ISO." }],
+  },
+  "dusk|indoor": {
+    aufnahmemodus: MODE_360, auflösung: "8K", fps: "30",
+    iso_range: "400–1600", verschlusszeit: "1/30–1/60s",
+    weißabgleich: { de: "Manuell je Lichtquelle", en: "Manual per light source" },
+    anti_flicker: true,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Optional", en: "Optional" },
+    fov: null,
+    tipps: [{ de: "Anti-Flicker gegen Kunstlicht-Flackern aktivieren.", en: "Enable anti-flicker against artificial-light flicker." }],
+  },
+  "night|outdoor": {
+    aufnahmemodus: MODE_360, auflösung: { de: "5.7K (PureVideo) oder 8K", en: "5.7K (PureVideo) or 8K" }, fps: "30",
+    iso_range: "800–3200", verschlusszeit: "1/15–1/4s", weißabgleich: "3200–4000K",
+    anti_flicker: false,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Praktisch Pflicht", en: "Practically mandatory" },
+    fov: null,
+    tipps: [{ de: "PureVideo-Modus (5.7K) liefert bei sehr wenig Licht oft saubereres Ergebnis als 8K + hohes ISO.", en: "PureVideo mode (5.7K) often gives a cleaner result in very low light than 8K + high ISO." }],
+  },
+  "night|indoor": {
+    aufnahmemodus: MODE_360, auflösung: "8K", fps: "30",
+    iso_range: "400–1600", verschlusszeit: "1/30–1/60s",
+    weißabgleich: { de: "3200–4500K je Lichtquelle", en: "3200–4500K per light source" },
+    anti_flicker: true,
+    flowstate: { de: "FlowState an", en: "FlowState on" },
+    stativ: { de: "Optional", en: "Optional" },
+    fov: null,
+    tipps: [{ de: "Anti-Flicker ist hier zwingend (Kunstlicht).", en: "Anti-flicker is mandatory here (artificial light)." }],
+  },
+};
+
+/* ---- Layer 2: project overlay ---- */
+const LAYER2 = {
+  bike(r, inp) {
+    if (inp.tageszeit === "day") {
+      r.aufnahmemodus = MODE_SINGLE;
+      r.tipps.push({ de: "Einzelobjektiv-Modus: volle Auflösung, kein Reframing-Verlust, kein Studio-Schritt.", en: "Single-Lens mode: full resolution, no reframing loss, no Studio step." });
+    } else {
+      r.tipps.push({ de: "Bei wenig Licht eher 360°-Modus + PureVideo statt Einzelobjektiv.", en: "In low light prefer 360° + PureVideo over Single-Lens." });
+    }
+    r.fps = { de: "60 (Slow-Mo-Option)", en: "60 (slow-mo option)" };
+    r.verschlusszeit = { de: "1/250–1/1000s (Bewegungsschärfe)", en: "1/250–1/1000s (motion sharpness)" };
+    r.flowstate_hinweis = { de: "FlowState an — wichtigster Faktor", en: "FlowState on — most important factor" };
+  },
+  concert(r, inp) {
+    r.anti_flicker = true;
+    r.fov_empfehlung = { de: "90° Linear", en: "90° Linear" };
+    if (inp.tageszeit === "night" || inp.umgebung === "indoor")
+      r.tipps.push({ de: "Bei wenig Licht PureVideo (5.7K) erwägen.", en: "Consider PureVideo (5.7K) in low light." });
+    r.tipps.push({ de: "Anti-Flicker zwingend an wegen Bühnenlicht.", en: "Anti-flicker mandatory due to stage lighting." });
+  },
+  nature(r) {
+    r.aufnahmemodus = MODE_360;
+    r.fov_empfehlung = { de: "80–95°", en: "80–95°" };
+    r.tipps.push({ de: "360° gibt Flexibilität beim Reframing. Bei Wasser/Reflexionen EV-Korrektur erwägen.", en: "360° gives reframing flexibility. Consider EV correction near water/reflections." });
+  },
+  architecture(r) {
+    r.aufnahmemodus = MODE_360;
+    r.fov_empfehlung = { de: "< 100° (gegen Verzerrung)", en: "< 100° (against distortion)" };
+    r.tipps.push({ de: "Weißabgleich besonders wichtig bei Mischlicht (Fenster + Kunstlicht).", en: "White balance especially important in mixed light (windows + artificial)." });
+  },
+  astro(r) {
+    r.aufnahmemodus = { de: "Foto (RAW/.insp)", en: "Photo (RAW/.insp)" };
+    r.auflösung = { de: "Foto (max.)", en: "Photo (max.)" };
+    r.verschlusszeit = "10–25s";
+    r.fps = "—";
+    r.stativ_empfehlung = { de: "Zwingend", en: "Mandatory" };
+    r.tipps.push({ de: "Langzeitbelichtung 10–25s. Stitching-Naht bei Sternenhimmel oft sichtbar, kaum vermeidbar.", en: "Long exposure 10–25s. Stitching seam often visible in starry skies, hard to avoid." });
+  },
+  vlog(r) {
+    r.aufnahmemodus = MODE_SINGLE;
+    r.fov_empfehlung = { de: "80–90°", en: "80–90°" };
+    r.tipps.push({ de: "Sprachverbesserung (Audio) aktivieren für Talking-Head.", en: "Enable voice enhancement (audio) for talking-head." });
+  },
+  street(r, inp) {
+    r.aufnahmemodus = MODE_360;
+    r.tipps.push({ de: "360° erlaubt nachträgliche Blickrichtungswahl.", en: "360° allows choosing the view direction later." });
+    if (inp.tageszeit === "night") {
+      r.anti_flicker = true;
+      r.tipps.push({ de: "Anti-Flicker zwingend wegen Straßenlaternen.", en: "Anti-flicker mandatory due to street lamps." });
+    }
+  },
+  water(r) {
+    r.tipps.push({ de: "Auf Lichtreflexionen achten — EV-Korrektur -0.3 bis -0.7 erwägen.", en: "Watch for reflections — consider EV correction -0.3 to -0.7." });
+    r.tipps.push({ de: "Bei Unterwasser-Anteilen AquaVision aktivieren.", en: "For underwater parts, enable AquaVision." });
+  },
+};
+
+/* ---- Layer 3: mount overlay ---- */
+const LAYER3 = {
+  tripod(r) {
+    r.stativ_empfehlung = { de: "Stativ vorhanden — keine zusätzliche Stabilisierung nötig.", en: "Tripod present — no extra stabilisation needed." };
+    r.flowstate_hinweis = { de: "FlowState kann aus bleiben (Stativ)", en: "FlowState can stay off (tripod)" };
+  },
+  handheld(r) { r.flowstate_hinweis = { de: "FlowState zwingend an", en: "FlowState mandatory on" }; },
+  helmet(r) {
+    r.flowstate_hinweis = { de: "FlowState an", en: "FlowState on" };
+    r.tipps.push({ de: "Helm-Mount: mehr Mikro-Bewegung als Brust — Direction Lock erwägen.", en: "Helmet mount: more micro-movement than chest — consider Direction Lock." });
+  },
+  chest(r) {
+    r.flowstate_hinweis = { de: "FlowState an", en: "FlowState on" };
+    r.tipps.push({ de: "Brust-Mount: ruhigeres Bild als Helm, gut für Vlog-artigen Content.", en: "Chest mount: steadier than helmet, good for vlog-style content." });
+  },
+  handlebar(r) {
+    r.flowstate_hinweis = { de: "FlowState an", en: "FlowState on" };
+    r.tipps.push({ de: "Lenker-Mount: Vibrationen vom Untergrund — Einzelobjektiv reduziert zusätzlichen Reframing-Verlust.", en: "Handlebar mount: vibrations from the surface — Single-Lens reduces extra reframing loss." });
+  },
+  selfiestick(r) {
+    r.tipps.push({ de: "Unsichtbarer Selfie Stick wird im 360°-Modus automatisch wegberechnet (LINEAR-Projektion).", en: "Invisible selfie stick is removed automatically in 360° mode (LINEAR projection)." });
+  },
+};
+
+/* ---- Combiner ---- */
+function isMode360(mode) { return tx(mode).indexOf("360") !== -1; }
+
+function planSetup(input) {
+  let { vorhaben, tageszeit, umgebung, montage } = input;
+  if (vorhaben === "astro") { tageszeit = "night"; umgebung = "outdoor"; }
+  const base = LAYER1[tageszeit + "|" + umgebung];
+  const r = {
+    aufnahmemodus: base.aufnahmemodus,
+    auflösung: base.auflösung,
+    fps: base.fps,
+    iso_range: base.iso_range,
+    verschlusszeit: base.verschlusszeit,
+    weißabgleich: base.weißabgleich,
+    anti_flicker: base.anti_flicker,
+    flowstate_hinweis: base.flowstate,
+    stativ_empfehlung: base.stativ,
+    fov_empfehlung: base.fov || null,
+    warnhinweise: [],
+    tipps: base.tipps.slice(),
+  };
+  if (LAYER2[vorhaben]) LAYER2[vorhaben](r, { vorhaben, tageszeit, umgebung, montage });
+  if (LAYER3[montage]) LAYER3[montage](r, { vorhaben, tageszeit, umgebung, montage });
+
+  if (vorhaben === "astro" && montage !== "tripod")
+    r.warnhinweise.push({ de: "Stativ ist hier praktisch zwingend, sonst werden Aufnahmen unbrauchbar.", en: "A tripod is practically mandatory here — otherwise the shots become unusable." });
+  if (montage === "selfiestick" && !isMode360(r.aufnahmemodus))
+    r.warnhinweise.push({ de: "Diese Montage funktioniert nur im 360°-Modus — der empfohlene Modus weicht ab.", en: "This mount only works in 360° mode — the recommended mode differs." });
+
+  /* dedupe tips (by de text), cap at 5 */
+  const seen = {}; r.tipps = r.tipps.filter(t => { const k = t.de || t; return seen[k] ? false : (seen[k] = true); }).slice(0, 5);
+  return r;
+}
+
+/* ============================================================
+   6. PACKLIST per project (see 03_FEATURES_BACKLOG.md)
+   ============================================================ */
+const PACKLIST = {
+  _common: [
+    { de: "X5 + geladener Akku", en: "X5 + charged battery" },
+    { de: "Ersatzakku(s) für lange Sessions", en: "Spare batterie(s) for long sessions" },
+    { de: "SD-Karte UHS-I / V30, exFAT", en: "SD card UHS-I / V30, exFAT" },
+    { de: "Offizielles USB-C-Kabel", en: "Official USB-C cable" },
+    { de: "Reinigungstuch für Objektive", en: "Lens cleaning cloth" },
+  ],
+  bike:         [{ de: "Lenker-/Helm-Mount", en: "Handlebar/helmet mount" }, { de: "Power Bank (USB-C) für lange Touren", en: "Power bank (USB-C) for long tours" }],
+  concert:      [{ de: "Kompaktes Stativ / Tischstativ", en: "Compact / tabletop tripod" }, { de: "Externes Mic (Mic Air/Pro) optional", en: "External mic (Mic Air/Pro) optional" }],
+  nature:       [{ de: "Selfie-Stick / Stativ", en: "Selfie stick / tripod" }, { de: "ND-Filter optional", en: "ND filter optional" }],
+  architecture: [{ de: "Stativ für saubere Linien", en: "Tripod for clean lines" }],
+  astro:        [{ de: "Stabiles Stativ (zwingend)", en: "Sturdy tripod (mandatory)" }, { de: "Fernauslöser / App-Auslösung", en: "Remote / app trigger" }, { de: "Stirnlampe", en: "Headlamp" }],
+  vlog:         [{ de: "Stativ / Mini-Stativ", en: "Tripod / mini tripod" }, { de: "Externes Mic für klare Stimme", en: "External mic for clear voice" }],
+  street:       [{ de: "Unsichtbarer Selfie Stick", en: "Invisible selfie stick" }],
+  water:        [{ de: "Dive-Case / Schutzgehäuse", en: "Dive case / protective housing" }, { de: "Anti-Beschlag-Pads", en: "Anti-fog pads" }, { de: "Schwimmender Griff", en: "Floating grip" }],
+};
+
+/* ============================================================
+   7. POST-SHOOT keywording hints per project
+   ============================================================ */
+const KEYWORDS = {
+  bike:         "cyclist trail outdoor sport action POV",
+  concert:      "concert event stage lights crowd night",
+  nature:       "landscape nature scenery outdoor mood",
+  architecture: "architecture interior building design space",
+  astro:        "night sky stars astro long exposure",
+  vlog:         "person talking vlog lifestyle interview",
+  street:       "street city urban people scene",
+  water:        "water beach ocean reflection summer",
+};
+</script>
+
+<script>
+/* ============================================================
+   8. GUIDE CONTENT (see 01_GUIDE_CONTENT.md)
+   Block schema: p / h / ul / ol / table / box  (all bilingual)
+   ============================================================ */
+const SECTIONS = [
+  {
+    id: "grundlagen", icon: "📐",
+    title: { de: "Grundlagen & Aufnahme", en: "Basics & Capture" },
+    blocks: [
+      { h: { de: "Goldene Grundregeln", en: "Golden ground rules" } },
+      { ul: [
+        { de: "Immer in 8K (7680×3840) aufnehmen — maximale Flexibilität beim Reframing.", en: "Always record in 8K (7680×3840) — maximum flexibility when reframing." },
+        { de: "5.7K nur wenn Speicher/Akku knapp ist — Qualitätsverlust beim Ausschneiden.", en: "5.7K only when storage/battery is tight — quality loss when cropping." },
+        { de: "KI-Stitching aktiv lassen + Chromatische Kalibrierung einschalten.", en: "Keep AI stitching on + enable chromatic calibration." },
+        { de: "Wärme beim USB-Verbinden ist normal — kein Defekt.", en: "Warmth when connected via USB is normal — not a defect." },
+        { de: "Dateien immer erst auf den PC kopieren, dann in Studio öffnen.", en: "Always copy files to the PC first, then open them in Studio." },
+      ] },
+      { h: { de: "Optik verstehen", en: "Understanding the optics" } },
+      { box: { kind: "info", lbl: { de: "Kein optischer Zoom", en: "No optical zoom" },
+        text: { de: "Die X5 hat keinen optischen Zoom. Näher rangehen ist die einzige echte Lösung. Digitales Reinzoomen = Qualitätsverlust.", en: "The X5 has no optical zoom. Getting closer is the only real solution. Digital zoom = quality loss." } } },
+      { table: { head: [{ de: "Thema", en: "Topic" }, { de: "Was passiert", en: "What happens" }], rows: [
+        [{ de: "360° → Flat", en: "360° → Flat" }, { de: "8K verteilt auf 360° → beim Reframing (~90° FOV) bleiben effektiv ~2K übrig.", en: "8K spread over 360° → after reframing (~90° FOV) only ~2K effectively remains." }],
+        [{ de: "Fischaugen-Look", en: "Fisheye look" }, { de: "FOV über 110° → Verzerrung. Lösung: LINEAR + FOV auf 80–95°.", en: "FOV above 110° → distortion. Fix: LINEAR + FOV at 80–95°." }],
+        [{ de: "Stitching-Naht", en: "Stitching seam" }, { de: "Keine Objekte direkt an die Seiten der Kamera — dort liegen die Nähte.", en: "No objects directly at the camera's sides — the seams sit there." }],
+      ] } },
+      { h: { de: "Dateien & Formate", en: "Files & formats" } },
+      { table: { head: [{ de: "Format", en: "Format" }, { de: "Bedeutung", en: "Meaning" }], rows: [
+        [".insv", { de: "Deine 360°-Videodateien — behalten.", en: "Your 360° video files — keep." }],
+        [".lrv", { de: "Low-Res-Vorschaudateien — optional löschen.", en: "Low-res preview files — optionally delete." }],
+        [".insp", { de: "360°-Fotos — behalten, wenn du sie brauchst.", en: "360° photos — keep if you need them." }],
+      ] } },
+      { box: { kind: "warn", lbl: { de: "Achtung", en: "Caution" },
+        text: { de: "Dateien erst nach dem Export umbenennen — Studio verlinkt Projekte über den Originalnamen.", en: "Only rename files after export — Studio links projects via the original name." } } },
+    ],
+  },
+  {
+    id: "manual", icon: "🎛️",
+    title: { de: "Manuelle Werte einstellen", en: "Setting Values Manually" },
+    blocks: [
+      { p: { de: "Zeigt nicht nur welche Werte du einstellen solltest, sondern wo und wie.", en: "Shows not just which values to set, but where and how." } },
+      { h: { de: "Über die Kamera direkt", en: "Directly on the camera" } },
+      { ol: [
+        { de: "Von Auto- auf Pro/Manuell-Modus wechseln (Moduswahl auf dem Touchscreen).", en: "Switch from Auto to Pro/Manual mode (mode selector on the touchscreen)." },
+        { de: "Auf dem Display nach rechts wischen → öffnet das Aufnahmeparameter-Panel (ISO, Verschlusszeit, Weißabgleich).", en: "Swipe right on the display → opens the capture parameter panel (ISO, shutter, white balance)." },
+        { de: "Gewünschten Wert antippen → per Touch/Scroll einstellen.", en: "Tap the desired value → set via touch/scroll." },
+      ] },
+      { h: { de: "Über die Insta360 App (komfortabler)", en: "Via the Insta360 app (more comfortable)" } },
+      { p: { de: "App öffnen → Live-Vorschau → Pro-Mode-Symbol antippen → identisches Panel, ISO/Shutter/WB einzeln einstellbar.", en: "Open app → live preview → tap the Pro-Mode icon → identical panel, ISO/shutter/WB individually adjustable." } },
+      { box: { kind: "tip", lbl: { de: "Tipp", en: "Tip" },
+        text: { de: "Auto-ISO geht bis 1600. Im manuellen Modus möglichst 400–800 bleiben, wenn Stativ oder Zusatzlicht vorhanden ist.",
+                en: "Auto-ISO goes up to 1600. In manual mode, stay around 400–800 when a tripod or extra light is available." } } },
+      { h: { de: "Weitere Quickrefs", en: "More quick refs" } },
+      { ul: [
+        { de: "SD-Karte formatieren: Einstellungen → SD-Karte → Formatieren (an der Kamera).", en: "Format SD card: Settings → SD card → Format (on the camera)." },
+        { de: "Firmware-Update: über die App, Benachrichtigung bei Verfügbarkeit, Anweisungen am Bildschirm folgen.", en: "Firmware update: via the app, notification when available, follow on-screen instructions." },
+        { de: "Moduswechsel Video/Foto: Quick-Switch-Taste/Geste am Touchscreen.", en: "Switch video/photo: quick-switch button/gesture on the touchscreen." },
+      ] },
+    ],
+  },
+  {
+    id: "scenes", icon: "🎬", special: "scenes",
+    title: { de: "Aufnahme-Szenerien", en: "Capture Scenes" },
+    intro: { de: "Optimale Einstellungen für verschiedene Lichtsituationen — tippe eine Szene für Details.", en: "Optimal settings for different lighting situations — tap a scene for details." },
+  },
+  {
+    id: "purevideo", icon: "🌙",
+    title: { de: "PureVideo-Modus (Dämmerung & Nacht)", en: "PureVideo Mode (Dusk & Night)" },
+    blocks: [
+      { p: { de: "KI-gestützter Lowlight-Modus, nutzt den dreifachen AI-Chip der X5. Verbessert Belichtung, reduziert Rauschen und optimiert Farben in Echtzeit.", en: "AI-assisted low-light mode using the X5's triple AI chip. Improves exposure, reduces noise and optimises colours in real time." } },
+      { box: { kind: "warn", lbl: { de: "Wichtige Einschränkung", en: "Important limitation" },
+        text: { de: "PureVideo läuft NICHT in 8K. Nur verfügbar bis 5.7K.", en: "PureVideo does NOT run in 8K. Only available up to 5.7K." } } },
+      { table: { head: [{ de: "Einstellung", en: "Setting" }, { de: "Wert", en: "Value" }], rows: [
+        [{ de: "Auflösung", en: "Resolution" }, { de: "5.7K (kein 8K möglich)", en: "5.7K (8K not possible)" }],
+        [{ de: "FPS", en: "FPS" }, { de: "60 für beste Lichtempfindlichkeit", en: "60 for best light sensitivity" }],
+        [{ de: "Wann nutzen", en: "When to use" }, { de: "Sehr dunkle Szenen, wo 8K + manuelles ISO nicht mehr ausreicht", en: "Very dark scenes where 8K + manual ISO is no longer enough" }],
+        [{ de: "Wann NICHT", en: "When NOT" }, { de: "Wenn maximale Auflösung wichtiger ist als Lowlight-Qualität", en: "When maximum resolution matters more than low-light quality" }],
+      ] } },
+      { box: { kind: "info", lbl: { de: "Für Dämmerung & Nacht", en: "For dusk & night" },
+        text: { de: "Alternative zum manuellen ISO-Hochziehen: PureVideo (5.7K, kein 8K) testen. Oft saubereres Ergebnis bei sehr wenig Licht als 8K + hohes ISO.",
+                en: "Alternative to cranking ISO manually: test PureVideo (5.7K, no 8K). Often a cleaner result in very low light than 8K + high ISO." } } },
+    ],
+  },
+  {
+    id: "singlelens", icon: "🎯",
+    title: { de: "Einzelobjektiv-Modus (Single-Lens)", en: "Single-Lens Mode" },
+    blocks: [
+      { p: { de: "Die X5 nimmt mit nur einem Objektiv auf wie eine normale Weitwinkelkamera. Kein 360°-Stitching, kein Reframing nötig.", en: "The X5 records with a single lens like a normal wide-angle camera. No 360° stitching, no reframing needed." } },
+      { table: { head: [{ de: "Modus", en: "Mode" }, { de: "Auflösung", en: "Resolution" }, { de: "FOV", en: "FOV" }], rows: [
+        [{ de: "Single-Lens Standard", en: "Single-Lens standard" }, { de: "bis 4K 60fps", en: "up to 4K 60fps" }, { de: "normal", en: "normal" }],
+        [{ de: "FreeFrame + MaxView", en: "FreeFrame + MaxView" }, { de: "bis 4K 30fps", en: "up to 4K 30fps" }, { de: "bis 170°", en: "up to 170°" }],
+      ] } },
+      { h: { de: "Vorteile gegenüber 360°", en: "Advantages over 360°" } },
+      { ul: [
+        { de: "Kein Qualitätsverlust durch Reframing (keine „8K auf 360° verteilt → ~2K nach Reframe“).", en: "No quality loss from reframing (no \"8K spread over 360° → ~2K after reframe\")." },
+        { de: "Keine Stitching-Naht, die sichtbar werden kann.", en: "No stitching seam that can become visible." },
+        { de: "Direkt fertiges Flat-Video, kein Insta360-Studio-Schritt nötig.", en: "Ready-to-use flat video, no Insta360 Studio step needed." },
+      ] },
+      { h: { de: "Wann statt 360°", en: "When to use instead of 360°" } },
+      { ul: [
+        { de: "Lenker-/Helm-Montage bei Bike-Touren mit klarer Blickrichtung.", en: "Handlebar/helmet mount on bike tours with a fixed view direction." },
+        { de: "Bei gutem Licht (sieht bei hellem Tageslicht am besten aus).", en: "In good light (looks best in bright daylight)." },
+        { de: "Wenn Workflow-Geschwindigkeit wichtiger ist als 360°-Flexibilität.", en: "When workflow speed matters more than 360° flexibility." },
+      ] },
+      { box: { kind: "tip", lbl: { de: "360° bleibt besser, wenn …", en: "360° stays better when …" },
+        text: { de: "… du in der Nachbearbeitung noch nicht weißt, welcher Ausschnitt der beste ist, oder Tiny-Planet-/Reveal-Effekte willst.",
+                en: "… you don't yet know in post which crop is best, or you want tiny-planet/reveal effects." } } },
+    ],
+  },
+  {
+    id: "mount", icon: "🚲",
+    title: { de: "Montage & Bike-Setup", en: "Mounting & Bike Setup" },
+    blocks: [
+      { table: { head: [{ de: "Montage", en: "Mount" }, { de: "Vorteil", en: "Pro" }, { de: "Nachteil", en: "Con" }, { de: "Empfehlung", en: "Recommendation" }], rows: [
+        [{ de: "Lenker-Mount", en: "Handlebar" }, { de: "Stabil, POV", en: "Stable, POV" }, { de: "Asphalt-Vibrationen", en: "Asphalt vibrations" }, { de: "Einzelobjektiv + FlowState", en: "Single-Lens + FlowState" }],
+        [{ de: "Brust-Mount", en: "Chest" }, { de: "Ruhiger als Lenker", en: "Steadier than handlebar" }, { de: "Körperbewegung sichtbar", en: "Body movement visible" }, { de: "Gut für Vlog-Content", en: "Good for vlog content" }],
+        [{ de: "Helm-Mount", en: "Helmet" }, { de: "Folgt Blickrichtung", en: "Follows view direction" }, { de: "Mehr Mikro-Bewegung", en: "More micro-movement" }, { de: "Action-orientiert", en: "Action-oriented" }],
+        [{ de: "Unsichtbarer Selfie Stick", en: "Invisible selfie stick" }, { de: "Stick wird wegberechnet", en: "Stick is removed" }, { de: "Nur im 360°-Modus", en: "Only in 360° mode" }, { de: "Klassische Reveal-Shots", en: "Classic reveal shots" }],
+      ] } },
+      { box: { kind: "info", lbl: { de: "Selfie-Stick-Workflow", en: "Selfie-stick workflow" },
+        text: { de: "Im 360°-Modus mit Stick aufnehmen → in Insta360 Studio wird der Stick durch die Stitching-Logik unsichtbar (LINEAR-Projektion, Stick liegt in der Naht-Zone).",
+                en: "Record with stick in 360° mode → in Insta360 Studio the stick becomes invisible via the stitching logic (LINEAR projection, stick sits in the seam zone)." } } },
+      { h: { de: "Akku & Wärme bei Dauerbetrieb", en: "Battery & heat in continuous use" } },
+      { ul: [
+        { de: "Bei langen Sessions AI-Highlights deaktivieren (spart Akku, weniger Wärme).", en: "On long sessions, disable AI Highlights (saves battery, less heat)." },
+        { de: "Bildschirm-Auto-Sleep kürzer einstellen.", en: "Set screen auto-sleep shorter." },
+        { de: "Realistische Akkulaufzeit ca. 185 Min — bei 8K/Dauerbetrieb deutlich weniger. Für mehrstündige Touren Ersatzakku oder Power Bank über USB-C einplanen.", en: "Realistic battery life ~185 min — much less at 8K/continuous. For multi-hour tours plan a spare battery or USB-C power bank." },
+      ] },
+    ],
+  },
+  {
+    id: "audio", icon: "🎙️",
+    title: { de: "Audio-Einstellungen", en: "Audio Settings" },
+    blocks: [
+      { table: { head: [{ de: "Einstellung", en: "Setting" }, { de: "Wann nutzen", en: "When to use" }], rows: [
+        [{ de: "Windreduzierung", en: "Wind reduction" }, { de: "Immer bei Outdoor/Fahrtwind aktivieren", en: "Always enable outdoors / in headwind" }],
+        [{ de: "Sprachverbesserung", en: "Voice enhancement" }, { de: "Bei Vlog/Talking-Head, reduziert Hintergrundgeräusche", en: "For vlog/talking-head, reduces background noise" }],
+        [{ de: "Insta360 Mic Air/Pro (extern)", en: "Insta360 Mic Air/Pro (external)" }, { de: "Wenn deutlich bessere Tonqualität gewünscht ist", en: "When noticeably better audio quality is wanted" }],
+      ] } },
+    ],
+  },
+  {
+    id: "studio", icon: "🖥️",
+    title: { de: "Insta360 Studio", en: "Insta360 Studio" },
+    blocks: [
+      { p: { de: "Reframing, Keyframes, Projektion & Nachbearbeitung der 360°-Aufnahmen.", en: "Reframing, keyframes, projection & post-processing of the 360° recordings." } },
+      { h: { de: "Projektion / Blickwinkelrad", en: "Projection / view dial" } },
+      { table: { head: [{ de: "Modus", en: "Mode" }, { de: "Wirkung", en: "Effect" }], rows: [
+        ["LINEAR", { de: "Flat-Video wie normale Kamera. Standard für alle Exports.", en: "Flat video like a normal camera. Default for all exports." }],
+        [{ de: "FOV-Wert", en: "FOV value" }, { de: "80–95° = natürlich, > 110° = Fisheye. Wert anklicken → Mausrad.", en: "80–95° = natural, > 110° = fisheye. Click the value → scroll wheel." }],
+        ["DEWARP", { de: "Leicht entzerrt, noch sehr weit. Selten sinnvoll.", en: "Slightly dewarped, still very wide. Rarely useful." }],
+        ["Tiny Planet", { de: "Kugeleffekt. Per Keyframe animierbar → cineastischer Einstieg.", en: "Sphere effect. Animatable via keyframe → cinematic intro." }],
+      ] } },
+      { h: { de: "Keyframe-System", en: "Keyframe system" } },
+      { ol: [
+        { de: "Setzen: Playhead an die Position → +-Symbol klicken.", en: "Set: playhead to the position → click the + icon." },
+        { de: "Bearbeiten: Keyframe anklicken → Pan / Tilt / Roll / FOV einstellen.", en: "Edit: click the keyframe → set Pan / Tilt / Roll / FOV." },
+        { de: "Zahl „2“ auf einem Keyframe = zwei gestapelte Keyframes. Timeline reinzoomen, bis sie sich trennen.", en: "A \"2\" on a keyframe = two stacked keyframes. Zoom into the timeline until they separate." },
+        { de: "Löschen: Keyframe anklicken → Entf/Delete.", en: "Delete: click the keyframe → Del." },
+      ] },
+      { h: { de: "Trimming", en: "Trimming" } },
+      { ul: [
+        { de: "Dunkles Material = getrimmter Bereich → wird beim Export nicht ausgegeben.", en: "Dark material = trimmed range → not included in the export." },
+        { de: "– / + Regler = Timeline-Zoom, kein FOV-Regler.", en: "– / + slider = timeline zoom, not an FOV control." },
+        { de: "Mehrere Clips kombinierbar (seit Major Update 2024).", en: "Multiple clips can be combined (since the 2024 major update)." },
+      ] },
+      { h: { de: "Medienverarbeitung", en: "Media processing" } },
+      { table: { head: [{ de: "Funktion", en: "Feature" }, { de: "Empfehlung", en: "Recommendation" }], rows: [
+        ["Color Plus", { de: "Automatische Farboptimierung. Immer einschalten.", en: "Automatic colour optimisation. Always on." }],
+        [{ de: "Klarheit Plus", en: "Clarity Plus" }, { de: "Schärfe-Boost. Besonders bei Dämmerlicht / 5.7K sinnvoll.", en: "Sharpness boost. Especially useful at dusk / 5.7K." }],
+        [{ de: "Anti-Flimmern", en: "Anti-flicker" }, { de: "Nur bei Kunstlicht (Neon, Straßenlampen). Draußen: aus.", en: "Only with artificial light (neon, street lamps). Outdoors: off." }],
+        ["AquaVision", { de: "Nur für Unterwasser. Für alles andere: aus.", en: "Only for underwater. For everything else: off." }],
+      ] } },
+      { h: { de: "KI-Funktionen", en: "AI features" } },
+      { table: { head: [{ de: "Funktion", en: "Feature" }, { de: "Was sie macht", en: "What it does" }], rows: [
+        ["DeepTrack", { de: "Motiv antippen → Studio verfolgt automatisch. Kein manuelles Keyframing nötig.", en: "Tap a subject → Studio tracks it automatically. No manual keyframing needed." }],
+        ["Direction Lock", { de: "Blickrichtung bleibt fixiert bei Kamerabewegung.", en: "View direction stays fixed during camera movement." }],
+        ["TimeShift", { de: "Slow-Mo und Zeitraffer gezielt im Clip — kein separates Tool nötig.", en: "Slow-mo and timelapse within the clip — no separate tool needed." }],
+      ] } },
+    ],
+  },
+  {
+    id: "export", icon: "📤",
+    title: { de: "Export-Einstellungen", en: "Export Settings" },
+    blocks: [
+      { box: { kind: "warn", lbl: { de: "Wichtigste Einstellung", en: "Most important setting" },
+        text: { de: "„Exportieren als: Video“ wählen — NICHT „360°-Video“. Sonst bleibt der Fisheye-Look, egal wie gut das Reframing ist.", en: "Choose \"Export as: Video\" — NOT \"360° video\". Otherwise the fisheye look stays, no matter how good the reframing is." } } },
+      { h: { de: "TikTok / Instagram Reels", en: "TikTok / Instagram Reels" } },
+      { table: { head: [{ de: "Parameter", en: "Parameter" }, { de: "Wert", en: "Value" }], rows: [
+        [{ de: "Format", en: "Format" }, { de: "Video (Reframe)", en: "Video (reframe)" }],
+        [{ de: "Auflösung", en: "Resolution" }, "2720×1530 / 1920×1080"],
+        [{ de: "Bitrate", en: "Bitrate" }, { de: "30 Mbps reicht", en: "30 Mbps is enough" }],
+        ["Codec", { de: "H.264 für max. Kompatibilität", en: "H.264 for max. compatibility" }],
+        ["FPS", "29.97 / 30"],
+      ] } },
+      { h: { de: "Archiv / Master", en: "Archive / Master" } },
+      { table: { head: [{ de: "Parameter", en: "Parameter" }, { de: "Wert", en: "Value" }], rows: [
+        [{ de: "Format", en: "Format" }, { de: "Video (Reframe)", en: "Video (reframe)" }],
+        [{ de: "Auflösung", en: "Resolution" }, "3840×2160 (4K)"],
+        [{ de: "Bitrate", en: "Bitrate" }, "50–100 Mbps"],
+        ["Codec", { de: "H.265 (kleinere Datei, gleiche Qualität)", en: "H.265 (smaller file, same quality)" }],
+      ] } },
+      { h: { de: "YouTube 360°", en: "YouTube 360°" } },
+      { table: { head: [{ de: "Parameter", en: "Parameter" }, { de: "Wert", en: "Value" }], rows: [
+        [{ de: "Format", en: "Format" }, { de: "360°-Video (diesmal wirklich!)", en: "360° video (this time for real!)" }],
+        [{ de: "Auflösung", en: "Resolution" }, "7680×3840 (8K) / 5760×2880"],
+        ["Codec", { de: "H.264 für YouTube-Kompatibilität", en: "H.264 for YouTube compatibility" }],
+      ] } },
+      { box: { kind: "info", lbl: { de: "Hinweis", en: "Note" },
+        text: { de: "Beim 360°-YouTube-Video sieht der Viewer im Browser selbst „gerade“ — der Fisheye-Effekt verschwindet beim Navigieren im Player.", en: "With a 360° YouTube video the viewer looks around \"straight\" in the browser — the fisheye effect disappears while navigating the player." } } },
+    ],
+  },
+  {
+    id: "davinci", icon: "🎞️",
+    title: { de: "DaVinci Resolve", en: "DaVinci Resolve" },
+    blocks: [
+      { box: { kind: "info", lbl: { de: "Workflow", en: "Workflow" },
+        text: { de: "Erst in Insta360 Studio reframen und als MP4 exportieren — dann das fertige MP4 in DaVinci laden.", en: "First reframe in Insta360 Studio and export as MP4 — then load the finished MP4 into DaVinci." } } },
+      { h: { de: "Farbe & Schärfe", en: "Colour & sharpness" } },
+      { table: { head: [{ de: "Bereich", en: "Area" }, { de: "Empfehlung", en: "Recommendation" }], rows: [
+        [{ de: "Schärfe", en: "Sharpness" }, { de: "Color-Seite → Blur/Sharpen → Sharpen 0.2–0.4. Holt aus dem 360°-Reframe mehr raus.", en: "Color page → Blur/Sharpen → Sharpen 0.2–0.4. Gets more out of the 360° reframe." }],
+        [{ de: "Rauschen", en: "Noise" }, { de: "Temporal NR für Dämmerungs-/Nacht-Footage. Radius 1–2, Stärke 20–40 %.", en: "Temporal NR for dusk/night footage. Radius 1–2, strength 20–40%." }],
+        [{ de: "Kontrast", en: "Contrast" }, { de: "Curves oder Lift/Gamma/Gain. Leichtes S-Curve gibt Tiefe ohne Überbearbeitung.", en: "Curves or Lift/Gamma/Gain. A gentle S-curve adds depth without over-processing." }],
+        [{ de: "Sättigung", en: "Saturation" }, { de: "Hue/Sat Curves — einzelne Farbbereiche boosten statt alles global hochzuziehen.", en: "Hue/Sat curves — boost individual colour ranges instead of pushing everything globally." }],
+      ] } },
+      { h: { de: "Schnitt-Workflow", en: "Edit workflow" } },
+      { ol: [
+        { de: "Ins Projekt importieren: MP4 in den Media Pool ziehen. Projekt auf 3840×2160, 29.97 fps setzen.", en: "Import into the project: drag the MP4 into the Media Pool. Set the project to 3840×2160, 29.97 fps." },
+        { de: "Cut Page für schnellen Schnitt, Edit Page für präzise Arbeit mit Transitions.", en: "Cut page for quick editing, Edit page for precise work with transitions." },
+        { de: "Color Page: node-basiertes Grading. Erster Node = Basis-Korrektur, zweiter Node = Look.", en: "Color page: node-based grading. First node = base correction, second node = look." },
+        { de: "Deliver Page exportieren: H.264, 4K, 50 Mbps für die finale Ausgabe.", en: "Export on the Deliver page: H.264, 4K, 50 Mbps for the final output." },
+      ] },
+      { box: { kind: "tip", lbl: { de: "Tipps", en: "Tips" },
+        text: { de: "360°-Reframe-Footage hat weniger Schärfereserven → Schärfen lohnt sich immer. Temporal NR bewahrt mehr Details als Spatial NR. DaVinci Free kann alles Nötige — keine Adobe-Produkte erforderlich.", en: "360° reframe footage has less sharpness headroom → sharpening always pays off. Temporal NR preserves more detail than spatial NR. DaVinci Free does everything needed — no Adobe products required." } } },
+    ],
+  },
+  {
+    id: "sdcard", icon: "💾",
+    title: { de: "SD-Karten-Kompatibilität", en: "SD Card Compatibility" },
+    blocks: [
+      { table: { head: [{ de: "Anforderung", en: "Requirement" }, { de: "Wert", en: "Value" }], rows: [
+        [{ de: "Geschwindigkeitsklasse", en: "Speed class" }, { de: "UHS-I, mindestens V30", en: "UHS-I, at least V30" }],
+        [{ de: "Format", en: "Format" }, "exFAT"],
+        [{ de: "Max. Kapazität", en: "Max. capacity" }, { de: "bis 1 TB getestet", en: "up to 1 TB tested" }],
+        [{ de: "Empfohlene Hersteller", en: "Recommended brands" }, "SanDisk, Lexar"],
+        [{ de: "Wartungstipp", en: "Maintenance tip" }, { de: "Regelmäßig in Kamera/App formatieren gegen Schreibfehler", en: "Format regularly in camera/app to avoid write errors" }],
+      ] } },
+    ],
+  },
+  {
+    id: "trouble", icon: "🛠️",
+    title: { de: "Troubleshooting", en: "Troubleshooting" },
+    blocks: [
+      { table: { head: [{ de: "Problem", en: "Problem" }, { de: "Lösung", en: "Solution" }], rows: [
+        [{ de: "Kamera wird sehr warm", en: "Camera gets very warm" }, { de: "Normal bei 8K/Dauerbetrieb. AI-Highlights deaktivieren, Bildschirm-Timeout verkürzen. Kein Defekt.", en: "Normal at 8K/continuous. Disable AI Highlights, shorten screen timeout. Not a defect." }],
+        [{ de: "Sichtbare Stitching-Naht", en: "Visible stitching seam" }, { de: "Objekte nicht direkt seitlich an die Kamera setzen — dort liegen die Nähte. Bei Sternenhimmel kaum vermeidbar.", en: "Don't place objects directly to the camera's sides — the seams are there. Hard to avoid with starry skies." }],
+        [{ de: "Kamera lässt sich nicht einschalten", en: "Camera won't turn on" }, { de: "Akku-Ladezustand und Kontakte prüfen. Forced Restart: Power-Taste > 8 Sek halten.", en: "Check battery charge and contacts. Forced restart: hold power > 8 sec." }],
+        [{ de: "Dateiübertragung schlägt fehl", en: "File transfer fails" }, { de: "Nur offizielles USB-C-Kabel nutzen — Drittanbieter-Kabel verursachen oft Probleme.", en: "Use only the official USB-C cable — third-party cables often cause issues." }],
+        [{ de: "App verbindet nicht", en: "App won't connect" }, { de: "Kamera-WLAN am Smartphone „vergessen“ und neu verbinden. Firmware/App aktuell?", en: "\"Forget\" the camera Wi-Fi on the phone and reconnect. Firmware/app up to date?" }],
+        [{ de: "Speicherkartenfehler", en: "Memory card error" }, { de: "UHS-I/V30 und exFAT prüfen (siehe SD-Karten-Sektion).", en: "Check UHS-I/V30 and exFAT (see SD card section)." }],
+      ] } },
+    ],
+  },
+  {
+    id: "stock", icon: "📦",
+    title: { de: "Footage für Stock & freien Content", en: "Footage for Stock & Free Content" },
+    blocks: [
+      { table: { head: [{ de: "Kriterium", en: "Criterion" }, { de: "Stock", en: "Stock" }, { de: "Freier Content", en: "Free content" }], rows: [
+        [{ de: "Erkennbare Personen ohne Release", en: "Recognisable people, no release" }, { de: "Nein (Lizenzproblem)", en: "No (licensing issue)" }, { de: "Ja, unproblematisch", en: "Yes, fine" }],
+        [{ de: "Fremdes Eigentum / Marken", en: "Third-party property / brands" }, { de: "Nein", en: "No" }, { de: "Meist unproblematisch", en: "Mostly fine" }],
+        [{ de: "Stabiler Horizont, sauberes B-Roll", en: "Stable horizon, clean B-roll" }, { de: "Ja", en: "Yes" }, "—"],
+        [{ de: "Sehr spezifischer lokaler Moment", en: "Very specific local moment" }, { de: "Eher nicht", en: "Rather not" }, { de: "Ja", en: "Yes" }],
+      ] } },
+      { h: { de: "Praxis-Hinweise", en: "Practical notes" } },
+      { ul: [
+        { de: "GPS-Metadaten bleiben in den Clips — hilfreich fürs Orts-Keywording, vor Stock-Upload prüfen.", en: "GPS metadata stays in the clips — useful for location keywording, check before stock upload." },
+        { de: "Keywording-Muster: Motiv + Aktivität + Tageszeit + Landschaftstyp + Stimmung (z. B. „cyclist forest trail morning light mist sport“).", en: "Keywording pattern: subject + activity + time of day + landscape + mood (e.g. \"cyclist forest trail morning light mist sport\")." },
+        { de: "Früh trennen: Stock-taugliche vs. freie Clips taggen spart später viel Zeit.", en: "Separate early: tagging stock-ready vs. free clips saves a lot of time later." },
+      ] },
+    ],
+  },
+];
+
+/* ============================================================
+   9. SCENES — grid + drilldown (from base guide, bilingual)
+   ============================================================ */
+const SCENES = [
+  {
+    id: "tag", emoji: "☀️", thumb: "linear-gradient(135deg,#87ceeb,#fffde7)",
+    name: { de: "Tageslicht", en: "Daylight" },
+    hint: { de: "Optimale Bedingungen — wenig Kompromisse nötig", en: "Optimal conditions — few compromises needed" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Auto oder Manuell", en: "Auto or manual" }],
+      [{ de: "Auflösung", en: "Resolution" }, "8K"],
+      ["ISO", { de: "Auto (bleibt niedrig)", en: "Auto (stays low)" }],
+      [{ de: "Verschlusszeit", en: "Shutter" }, "Auto"],
+      [{ de: "Weißabgleich", en: "White balance" }, { de: "Auto oder Daylight 5500K", en: "Auto or daylight 5500K" }],
+      ["FlowState", { de: "An", en: "On" }],
+      ["FPS", "29.97 / 30"],
+    ],
+    tips: [
+      { de: "Sonne im Rücken vermeiden — erzeugt harte Schatten an der Naht.", en: "Avoid having the sun behind you — it creates hard shadows at the seam." },
+      { de: "FOV auf 90° = maximale Schärfe ohne Verzerrung.", en: "FOV at 90° = maximum sharpness without distortion." },
+      { de: "Bei direkter Sonne: EV-Korrektur -0.3 bis -0.7 für bessere Highlights.", en: "In direct sun: EV correction -0.3 to -0.7 for better highlights." },
+    ],
+    info: null,
+  },
+  {
+    id: "daemmer", emoji: "🌅", thumb: "linear-gradient(135deg,#ff9a6c,#6b5b95)",
+    name: { de: "Dämmerung / Golden Hour", en: "Dusk / Golden Hour" },
+    hint: { de: "Wunderschönes Licht, aber ISO steigt", en: "Beautiful light, but ISO rises" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Manuell empfohlen", en: "Manual recommended" }],
+      [{ de: "Auflösung", en: "Resolution" }, { de: "8K oder PureVideo (5.7K)", en: "8K or PureVideo (5.7K)" }],
+      ["ISO", { de: "Manuell max. 1600", en: "Manual max. 1600" }],
+      [{ de: "Verschlusszeit", en: "Shutter" }, "1/30 – 1/60s"],
+      [{ de: "Weißabgleich", en: "White balance" }, { de: "Manuell 4000–5000K", en: "Manual 4000–5000K" }],
+      ["FlowState", { de: "An", en: "On" }],
+      ["Export", { de: "Color Plus + Klarheit Plus einschalten", en: "Enable Color Plus + Clarity Plus" }],
+    ],
+    tips: [
+      { de: "Stativ/feste Montage erhöht die Qualität drastisch.", en: "A tripod/fixed mount improves quality drastically." },
+      { de: "Mehrere Takes machen — die Belichtung ändert sich schnell.", en: "Shoot several takes — exposure changes quickly." },
+      { de: "In DaVinci: Temporal NR zur Rauschreduzierung.", en: "In DaVinci: Temporal NR for noise reduction." },
+    ],
+    info: { de: "Alternative zum manuellen ISO-Hochziehen: PureVideo-Modus testen (5.7K, kein 8K). Oft saubereres Ergebnis bei sehr wenig Licht als 8K + hohes ISO. Das weiche Bild bei Dämmerlicht ist kein Fehler — es liegt am hohen ISO.",
+            en: "Alternative to cranking ISO manually: test PureVideo mode (5.7K, no 8K). Often a cleaner result in very low light than 8K + high ISO. The soft image at dusk is not a fault — it comes from the high ISO." },
+  },
+  {
+    id: "nacht", emoji: "🌙", thumb: "linear-gradient(135deg,#0d0d2b,#1a1a4e)",
+    name: { de: "Nacht / Stadtlicht", en: "Night / City Lights" },
+    hint: { de: "Stativ zwingend, ISO hoch", en: "Tripod mandatory, ISO high" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Manuell oder PureVideo", en: "Manual or PureVideo" }],
+      [{ de: "Auflösung", en: "Resolution" }, { de: "5.7K (PureVideo) oder 8K", en: "5.7K (PureVideo) or 8K" }],
+      ["ISO", { de: "800–3200 (je nach Licht)", en: "800–3200 (depending on light)" }],
+      [{ de: "Verschlusszeit", en: "Shutter" }, "1/15 – 1/4s"],
+      [{ de: "Weißabgleich", en: "White balance" }, { de: "Manuell 3200–4000K (Kunstlicht)", en: "Manual 3200–4000K (artificial light)" }],
+      [{ de: "Anti-Flimmern", en: "Anti-flicker" }, { de: "An (bei Leuchtstoffröhren/LED)", en: "On (with fluorescent/LED)" }],
+      ["FlowState", { de: "An, aber Stativ trotzdem besser", en: "On, but a tripod is still better" }],
+    ],
+    tips: [
+      { de: "Anti-Flimmern unbedingt aktivieren bei Straßenlaternen.", en: "Definitely enable anti-flicker with street lamps." },
+      { de: "Stativ = Pflicht; FlowState kann Bewegungsunschärfe nicht kompensieren.", en: "Tripod = mandatory; FlowState can't compensate for motion blur." },
+      { de: "ISO lieber niedrig + längere Verschlusszeit als hohes ISO.", en: "Prefer low ISO + longer shutter over high ISO." },
+    ],
+    info: { de: "Alternative zu 8K + hohem ISO: PureVideo-Modus (5.7K, kein 8K) liefert bei sehr wenig Licht oft ein saubereres Ergebnis.",
+            en: "Alternative to 8K + high ISO: PureVideo mode (5.7K, no 8K) often gives a cleaner result in very low light." },
+  },
+  {
+    id: "sterne", emoji: "✨", thumb: "linear-gradient(135deg,#0a0a1a,#1e1e3a)",
+    name: { de: "Sternenhimmel", en: "Starry Sky" },
+    hint: { de: "Foto empfohlen statt Video", en: "Photo recommended over video" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Manuell, unbedingt", en: "Manual, absolutely" }],
+      [{ de: "Format", en: "Format" }, { de: "Foto (RAW/.insp) bevorzugen", en: "Prefer photo (RAW/.insp)" }],
+      ["ISO", "800–3200"],
+      [{ de: "Verschlusszeit", en: "Shutter" }, { de: "10–25 Sekunden", en: "10–25 seconds" }],
+      [{ de: "Weißabgleich", en: "White balance" }, { de: "Manuell 3200–4000K", en: "Manual 3200–4000K" }],
+      ["Stativ", { de: "Absolut zwingend", en: "Absolutely mandatory" }],
+    ],
+    tips: [
+      { de: "500er-Regel: 500 ÷ Brennweite = max. Belichtungszeit ohne Sternstrich.", en: "500 rule: 500 ÷ focal length = max. exposure time without star trails." },
+      { de: "RAW-Fotos in Lightroom stacken für weniger Rauschen.", en: "Stack RAW photos in Lightroom for less noise." },
+      { de: "Spots mit wenig Lichtverschmutzung suchen.", en: "Look for spots with little light pollution." },
+      { de: "Video-Nachtaufnahmen sind bei 360°-Kameras generell schwach — Foto lohnt mehr.", en: "Night video is generally weak on 360° cameras — photo is more worthwhile." },
+    ],
+    info: { de: "Die Stitching-Naht ist bei Sternenhimmel oft sichtbar. Das ist bei allen 360°-Kameras so und lässt sich in Studio nicht vollständig wegmachen.",
+            en: "The stitching seam is often visible in starry skies. This is the case with all 360° cameras and can't be fully removed in Studio." },
+  },
+  {
+    id: "indoor", emoji: "🏠", thumb: "linear-gradient(135deg,#f5deb3,#deb887)",
+    name: { de: "Indoor / Kunstlicht", en: "Indoor / Artificial Light" },
+    hint: { de: "Weißabgleich ist entscheidend", en: "White balance is decisive" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Manuell empfohlen", en: "Manual recommended" }],
+      [{ de: "Auflösung", en: "Resolution" }, "8K"],
+      ["ISO", "400–1600"],
+      [{ de: "Verschlusszeit", en: "Shutter" }, "1/30 – 1/60s"],
+      [{ de: "Weißabgleich", en: "White balance" }, { de: "Glühbirne 3200K / Neon 4500K / Tageslicht 5500K", en: "Bulb 3200K / neon 4500K / daylight 5500K" }],
+      [{ de: "Anti-Flimmern", en: "Anti-flicker" }, { de: "An — immer bei Kunstlicht", en: "On — always with artificial light" }],
+      ["FlowState", { de: "An", en: "On" }],
+    ],
+    tips: [
+      { de: "Auto-Weißabgleich macht bei Mischlicht oft Unsinn — manuell setzen.", en: "Auto white balance often misbehaves in mixed light — set it manually." },
+      { de: "Fenster im Bild = HDR-Problem: Fenster opfern oder auf gleichmäßiges Licht warten.", en: "Window in frame = HDR problem: sacrifice the window or wait for even light." },
+      { de: "360° zeigt alles — Kabel, Stativ, dich selbst. Aufräumen lohnt sich.", en: "360° shows everything — cables, tripod, yourself. Tidying up pays off." },
+    ],
+    info: null,
+  },
+  {
+    id: "bewegung", emoji: "🏃", thumb: "linear-gradient(135deg,#4CAF50,#8BC34A)",
+    name: { de: "Action / Bewegung", en: "Action / Movement" },
+    hint: { de: "Hohe Framerate, kurze Belichtung", en: "High frame rate, short exposure" },
+    settings: [
+      [{ de: "Modus", en: "Mode" }, { de: "Einzelobjektiv (gutes Licht) oder 360°", en: "Single-Lens (good light) or 360°" }],
+      [{ de: "Auflösung", en: "Resolution" }, { de: "8K oder 5.7K bei 60fps", en: "8K or 5.7K at 60fps" }],
+      ["FPS", { de: "60 fps für Slow-Mo in Post", en: "60 fps for slow-mo in post" }],
+      ["ISO", { de: "Auto, bleibt meist niedrig", en: "Auto, usually stays low" }],
+      [{ de: "Verschlusszeit", en: "Shutter" }, "1/250 – 1/1000s"],
+      ["FlowState", { de: "An — wichtigste Einstellung bei Action", en: "On — the key setting for action" }],
+      ["DeepTrack", { de: "In Studio: Motiv verfolgen", en: "In Studio: track the subject" }],
+    ],
+    tips: [
+      { de: "60fps aufnehmen → in DaVinci auf 50% verlangsamen = flüssiges Slow-Mo.", en: "Record 60fps → slow to 50% in DaVinci = smooth slow-mo." },
+      { de: "FlowState ist bei der X5 sehr gut — auch beim Laufen brauchbares Bild.", en: "FlowState on the X5 is very good — usable footage even while running." },
+      { de: "DeepTrack in Studio spart massiv Zeit beim Keyframing.", en: "DeepTrack in Studio saves a lot of keyframing time." },
+    ],
+    info: null,
+  },
+];
+
+/* ============================================================
+   10. CHEATSHEET — scenario matrix (Layer 1) + grouped reference
+   ============================================================ */
+const CHEATSHEET = {
+  head: [
+    { de: "Szenario", en: "Scenario" }, { de: "Modus", en: "Mode" }, { de: "Auflösung", en: "Resolution" },
+    { de: "ISO", en: "ISO" }, { de: "Verschluss", en: "Shutter" }, { de: "WB", en: "WB" }, { de: "Anti-Flicker", en: "Anti-flicker" },
+  ],
+  rows: [
+    { de: "Tageslicht · Outdoor", en: "Daylight · Outdoor" },
+    { de: "Tageslicht · Indoor", en: "Daylight · Indoor" },
+    { de: "Dämmerung · Outdoor", en: "Dusk · Outdoor" },
+    { de: "Dämmerung · Indoor", en: "Dusk · Indoor" },
+    { de: "Nacht · Outdoor", en: "Night · Outdoor" },
+    { de: "Nacht · Indoor", en: "Night · Indoor" },
+  ],
+  keys: ["day|outdoor", "day|indoor", "dusk|outdoor", "dusk|indoor", "night|outdoor", "night|indoor"],
+};
+
+/* Grouped quick-reference (2-col), from the base guide */
+const CHEATSHEET_REF = [
+  { group: { de: "📹 Aufnahme", en: "📹 Capture" }, rows: [
+    [{ de: "Auflösung", en: "Resolution" }, { de: "8K (7680×3840) immer bevorzugen", en: "Always prefer 8K (7680×3840)" }],
+    ["Stitching", { de: "KI-Stitching + Chromatische Kalibrierung an", en: "AI stitching + chromatic calibration on" }],
+    [{ de: "Framerate", en: "Frame rate" }, { de: "29.97 / 30 Standard · 60 für Slow-Mo", en: "29.97 / 30 standard · 60 for slow-mo" }],
+    [{ de: "ISO (Auto)", en: "ISO (auto)" }, { de: "Für Dämmerlicht manuell auf max. 800–1600 begrenzen", en: "For dusk, manually cap at max. 800–1600" }],
+  ] },
+  { group: { de: "🎯 Projektion (Studio)", en: "🎯 Projection (Studio)" }, rows: [
+    [{ de: "Flat-Video", en: "Flat video" }, "LINEAR + FOV 80–95°"],
+    [{ de: "Fisheye-Look", en: "Fisheye look" }, { de: "FOV über 110° → runterziehen", en: "FOV above 110° → pull down" }],
+    ["Tiny Planet", { de: "Per Keyframe animieren: LINEAR → Tiny Planet → LINEAR", en: "Animate via keyframes: LINEAR → Tiny Planet → LINEAR" }],
+  ] },
+  { group: { de: "📤 Export", en: "📤 Export" }, rows: [
+    [{ de: "Flat für Social", en: "Flat for social" }, "Video · H.264 · 30 Mbps · 2720×1530"],
+    [{ de: "Archiv", en: "Archive" }, "Video · H.265 · 50–100 Mbps · 3840×2160"],
+    ["YouTube 360°", { de: "360°-Video · H.264 · 8K", en: "360° video · H.264 · 8K" }],
+  ] },
+];
+</script>
+
+<script>
+/* ============================================================
+   10. RENDER ENGINE
+   ============================================================ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const el = (id) => document.getElementById(id);
+
+/* ---- block renderer (guide content) ---- */
+function tableHtml(t) {
+  const head = "<tr>" + t.head.map(h => `<th>${tx(h)}</th>`).join("") + "</tr>";
+  const body = t.rows.map(row => "<tr>" + row.map(c => `<td>${tx(c)}</td>`).join("") + "</tr>").join("");
+  return `<div class="tbl-wrap"><table class="tbl"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+function rb(b) {
+  if (b.p)  return `<p>${tx(b.p)}</p>`;
+  if (b.h)  return `<h3>${tx(b.h)}</h3>`;
+  if (b.ul) return `<ul>${b.ul.map(li => `<li>${tx(li)}</li>`).join("")}</ul>`;
+  if (b.ol) return `<ol>${b.ol.map(li => `<li>${tx(li)}</li>`).join("")}</ol>`;
+  if (b.table) return tableHtml(b.table);
+  if (b.box) return `<div class="box ${b.box.kind}"><span class="lbl">${tx(b.box.lbl)}</span>${tx(b.box.text)}</div>`;
+  return "";
+}
+
+/* ---- toggles ---- */
+function buildSeg(host, items, current, onPick) {
+  host.innerHTML = "";
+  items.forEach(it => {
+    const b = document.createElement("button");
+    b.textContent = it.label;
+    if (it.id === current) b.classList.add("on");
+    b.onclick = () => onPick(it.id);
+    host.appendChild(b);
+  });
+}
+function refreshToggles() {
+  const langItems = [{ id: "de", label: "DE" }, { id: "en", label: "EN" }];
+  const themeItems = [{ id: "dark", label: tx(S.dark) }, { id: "light", label: tx(S.light) }];
+  ["s-lang", "m-lang"].forEach(id => buildSeg(el(id), langItems, state.lang, setLang));
+  ["s-theme", "m-theme"].forEach(id => buildSeg(el(id), themeItems, state.theme, setTheme));
+}
+function setLang(l)  { state.lang = l; localStorage.setItem("x5_lang", l); document.documentElement.lang = l; renderAll(); }
+function setTheme(t) { state.theme = t; localStorage.setItem("x5_theme", t); document.documentElement.setAttribute("data-theme", t); renderAll(); }
+
+/* ---- nav ---- */
+function buildNav() {
+  [el("nav"), el("mnav")].forEach(host => {
+    host.innerHTML = "";
+    NAV.forEach(n => {
+      const d = document.createElement("div");
+      d.className = "nav-item" + (n.id === state.route ? " active" : "");
+      d.innerHTML = `<span class="ico">${n.ico}</span><span>${tx(n.label)}</span>`;
+      d.onclick = () => { state.route = n.id; renderAll(); window.scrollTo(0, 0); };
+      host.appendChild(d);
+    });
+  });
+}
+
+/* ---- static i18n labels ---- */
+function applyChrome() {
+  $$("[data-i18n]").forEach(n => { const k = n.getAttribute("data-i18n"); if (S[k]) n.textContent = tx(S[k]); });
+  document.documentElement.lang = state.lang;
+  document.documentElement.setAttribute("data-theme", state.theme);
+}
+
+/* ============================================================
+   11. PAGES
+   ============================================================ */
+function pageHead(eyebrow, title, sub) {
+  return `<div class="page-head">${eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : ""}<h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>`;
+}
+
+function renderSceneSection(s) {
+  let h = `<div class="card" id="sec-${s.id}"><h2>${s.icon} ${tx(s.title)}</h2>`;
+  const open = state.sceneOpen && SCENES.find(x => x.id === state.sceneOpen);
+  if (open) {
+    h += `<button class="btn scene-back" data-scene-back="1">← ${tx({ de: "Zurück zu Szenerien", en: "Back to scenes" })}</button>`;
+    h += `<div class="scene-detail-head"><span class="emoji">${open.emoji}</span><div><h3>${tx(open.name)}</h3><p class="sub">${tx(open.hint)}</p></div></div>`;
+    h += `<div class="settings-grid">` +
+      open.settings.map(([k, v]) => `<div class="setting"><div class="k">${tx(k)}</div><div class="v">${tx(v)}</div></div>`).join("") + `</div>`;
+    if (open.info) h += `<div class="box info"><span class="lbl">${tx({ de: "Gut zu wissen", en: "Good to know" })}</span>${tx(open.info)}</div>`;
+    h += `<h3>${tx({ de: "Tipps", en: "Tips" })}</h3><ul>` + open.tips.map(t => `<li>${tx(t)}</li>`).join("") + `</ul>`;
+  } else {
+    h += `<p class="sub">${tx(s.intro)}</p><div class="scene-grid">` +
+      SCENES.map(sc => `<button class="scene-tile" data-scene="${sc.id}"><div class="emoji">${sc.emoji}</div><div class="name">${tx(sc.name)}</div></button>`).join("") +
+      `</div>`;
+  }
+  return h + `</div>`;
+}
+
+function renderGuide() {
+  const lead = { de: "Praxis-Guide für die Insta360 X5 — Einstellungen, Modi, Montage und Workflow.", en: "Practical guide for the Insta360 X5 — settings, modes, mounting and workflow." };
+  let html = pageHead(tx({ de: "Guide", en: "Guide" }), "X5 Field Guide", tx(lead));
+  /* chapter chip nav */
+  html += `<div class="chapter-nav">` +
+    SECTIONS.map(s => `<button class="chip" data-jump="sec-${s.id}">${s.icon} ${tx(s.title)}</button>`).join("") + `</div>`;
+  SECTIONS.forEach(s => {
+    if (s.special === "scenes") { html += renderSceneSection(s); return; }
+    html += `<div class="card" id="sec-${s.id}"><h2>${s.icon} ${tx(s.title)}</h2>` +
+            s.blocks.map(rb).join("") + `</div>`;
+  });
+  html += `<div class="footer-note">${tx({ de: "Inhalte gelten für Insta360 X5. Firmware-abhängige Details können abweichen.", en: "Content applies to the Insta360 X5. Firmware-dependent details may vary." })}</div>`;
+  return html;
+}
+
+function renderCheatsheet() {
+  const head = "<tr>" + CHEATSHEET.head.map(h => `<th>${tx(h)}</th>`).join("") + "</tr>";
+  const body = CHEATSHEET.keys.map((k, i) => {
+    const d = LAYER1[k];
+    const cells = [CHEATSHEET.rows[i], d.aufnahmemodus, d.auflösung, d.iso_range, d.verschlusszeit, d.weißabgleich,
+      d.anti_flicker ? { de: "An", en: "On" } : { de: "Aus", en: "Off" }];
+    return "<tr>" + cells.map(c => `<td>${tx(c)}</td>`).join("") + "</tr>";
+  }).join("");
+  let html = pageHead(tx({ de: "Referenz", en: "Reference" }), "Cheatsheet",
+    tx({ de: "Schnellübersicht der Basis-Settings nach Szenario.", en: "Quick overview of base settings by scenario." })) +
+    `<div class="card"><h2>${tx({ de: "Settings nach Szenario", en: "Settings by scenario" })}</h2><div class="tbl-wrap"><table class="tbl"><thead>${head}</thead><tbody>${body}</tbody></table></div></div>`;
+
+  /* grouped quick reference */
+  const refBody = CHEATSHEET_REF.map(g =>
+    `<tr><td colspan="2" style="background:var(--surface-2);color:var(--accent);font-weight:700">${tx(g.group)}</td></tr>` +
+    g.rows.map(r => `<tr><td style="font-weight:600;white-space:nowrap">${tx(r[0])}</td><td>${tx(r[1])}</td></tr>`).join("")
+  ).join("");
+  html += `<div class="card"><h2>${tx({ de: "Schnellreferenz", en: "Quick reference" })}</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>${tx({ de: "Funktion", en: "Function" })}</th><th>${tx({ de: "Einstellung / Wert", en: "Setting / value" })}</th></tr></thead><tbody>${refBody}</tbody></table></div></div>`;
+  return html;
+}
+
+/* ---- Planner ---- */
+function renderPlanner() {
+  const P = state.planner;
+  const astro = P.vorhaben === "astro";
+  let html = pageHead(tx({ de: "Setup-Planner", en: "Setup Planner" }),
+    tx({ de: "Was filmst du heute?", en: "What are you filming today?" }),
+    tx({ de: "Vier Fragen → eine konkrete Setup-Empfehlung. Regelbasiert, kein Internet nötig.", en: "Four questions → one concrete setup recommendation. Rule-based, no internet needed." }));
+
+  const qDefs = [
+    { key: "vorhaben",  n: 1, t: { de: "Vorhaben", en: "Project" }, opts: PLANNER_OPTS.vorhaben, disabled: false },
+    { key: "tageszeit", n: 2, t: { de: "Tageszeit", en: "Time of day" }, opts: PLANNER_OPTS.tageszeit, disabled: astro, lockNote: { de: "Nacht (fix)", en: "Night (fixed)" } },
+    { key: "umgebung",  n: 3, t: { de: "Umgebung", en: "Environment" }, opts: PLANNER_OPTS.umgebung, disabled: astro, lockNote: { de: "Outdoor (fix)", en: "Outdoor (fixed)" } },
+    { key: "montage",   n: 4, t: { de: "Montage / Bewegung", en: "Mount / Movement" }, opts: PLANNER_OPTS.montage, disabled: false },
+  ];
+
+  html += `<div class="stepper">`;
+  qDefs.forEach(q => {
+    const sel = astro && q.key === "tageszeit" ? "night" : astro && q.key === "umgebung" ? "outdoor" : P[q.key];
+    html += `<div class="qblock${q.disabled ? " disabled" : ""}"><div class="qtitle"><span class="qnum">${q.n}</span>${tx(q.t)}${q.disabled ? ` <span style="color:var(--text-dim);font-weight:400;font-size:12px">· ${tx(q.lockNote)}</span>` : ""}</div><div class="opts">`;
+    q.opts.forEach(o => {
+      html += `<button class="opt${sel === o.id ? " sel" : ""}" data-q="${q.key}" data-v="${o.id}">${tx(o.label)}</button>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="planner-actions"><button class="btn" id="planner-reset">${tx({ de: "Zurücksetzen", en: "Reset" })}</button></div>`;
+
+  const complete = P.vorhaben && P.montage && (astro || (P.tageszeit && P.umgebung));
+  if (complete) {
+    html += renderResult(planSetup(P), P.vorhaben);
+  } else {
+    html += `<div class="card"><p style="color:var(--text-dim);margin:0">${tx({ de: "Wähle oben deine Optionen — die Empfehlung erscheint automatisch.", en: "Pick your options above — the recommendation appears automatically." })}</p></div>`;
+  }
+  return html;
+}
+
+function setting(k, v, accent) {
+  return `<div class="setting"><div class="k">${tx(k)}</div><div class="v${accent ? " accent" : ""}">${tx(v)}</div></div>`;
+}
+
+function renderResult(r, vorhaben) {
+  let h = `<div class="result"><div class="card"><div class="eyebrow">${tx({ de: "Empfehlung", en: "Recommendation" })}</div><h2>${tx({ de: "Dein Setup", en: "Your Setup" })}</h2>`;
+
+  h += `<div class="settings-grid">`;
+  h += setting({ de: "Aufnahmemodus", en: "Capture mode" }, r.aufnahmemodus, true);
+  h += setting({ de: "Auflösung", en: "Resolution" }, r.auflösung);
+  h += setting({ de: "FPS", en: "FPS" }, r.fps);
+  h += setting({ de: "ISO", en: "ISO" }, r.iso_range);
+  h += setting({ de: "Verschlusszeit", en: "Shutter" }, r.verschlusszeit);
+  h += setting({ de: "Weißabgleich", en: "White balance" }, r.weißabgleich);
+  if (r.fov_empfehlung) h += setting({ de: "FOV", en: "FOV" }, r.fov_empfehlung);
+  h += `<div class="setting"><div class="k">${tx({ de: "Anti-Flicker", en: "Anti-flicker" })}</div><div class="v"><span class="badge ${r.anti_flicker ? "on" : "off"}">${r.anti_flicker ? tx({ de: "An", en: "On" }) : tx({ de: "Aus", en: "Off" })}</span></div></div>`;
+  h += `</div>`;
+
+  h += `<div class="grid2">`;
+  h += `<div><h3>${tx({ de: "Stabilisierung", en: "Stabilisation" })}</h3><p style="margin:0">${tx(r.flowstate_hinweis)}<br><span style="color:var(--text-dim)">${tx(r.stativ_empfehlung)}</span></p></div>`;
+  if (r.tipps.length) {
+    h += `<div><h3>${tx({ de: "Tipps", en: "Tips" })}</h3><ul style="margin:0 0 0 18px">${r.tipps.map(t => `<li>${tx(t)}</li>`).join("")}</ul></div>`;
+  }
+  h += `</div>`;
+
+  r.warnhinweise.forEach(w => { h += `<div class="box warn"><span class="lbl">${tx({ de: "Achtung", en: "Caution" })}</span>${tx(w)}</div>`; });
+  h += `</div>`;
+
+  /* Packlist (hangs off the planner result) */
+  const items = PACKLIST._common.concat(PACKLIST[vorhaben] || []);
+  h += `<div class="card"><h2>🎒 ${tx({ de: "Packliste", en: "Packing List" })}</h2><ul class="checklist">` +
+    items.map((it, i) => {
+      const ck = `pack_${vorhaben}_${i}`;
+      const on = state.checks[ck];
+      return `<li class="${on ? "done" : ""}"><input type="checkbox" id="${ck}" data-ck="${ck}" ${on ? "checked" : ""}><label for="${ck}">${tx(it)}</label></li>`;
+    }).join("") + `</ul></div>`;
+
+  return h;
+}
+
+/* ---- Post-shoot ---- */
+function renderPostshoot() {
+  const v = state.planner.vorhaben;
+  const baseChecks = [
+    { de: "Footage von SD-Karte sichern (Backup)", en: "Back up footage from the SD card" },
+    { de: "Clips sichten: Stock-tauglich vs. freier Content trennen", en: "Review clips: separate stock-ready vs. free content" },
+    { de: "Erkennbare Personen / Marken markieren (Release nötig?)", en: "Flag recognisable people / brands (release needed?)" },
+    { de: "Stitching/Reframing in Insta360 Studio prüfen", en: "Check stitching/reframing in Insta360 Studio" },
+    { de: "GPS-Metadaten vor Stock-Upload prüfen", en: "Check GPS metadata before stock upload" },
+    { de: "SD-Karte nach Backup in der Kamera formatieren", en: "Format the SD card in the camera after backup" },
+  ];
+  let h = pageHead(tx({ de: "Nach dem Dreh", en: "After the Shoot" }),
+    tx({ de: "Post-Shoot-Checkliste", en: "Post-Shoot Checklist" }),
+    tx({ de: "Schritte direkt nach der Aufnahme — vom Backup bis zum Keywording.", en: "Steps right after recording — from backup to keywording." }));
+
+  h += `<div class="card"><ul class="checklist">` +
+    baseChecks.map((c, i) => {
+      const ck = `post_${i}`;
+      const on = state.checks[ck];
+      return `<li class="${on ? "done" : ""}"><input type="checkbox" id="${ck}" data-ck="${ck}" ${on ? "checked" : ""}><label for="${ck}">${tx(c)}</label></li>`;
+    }).join("") + `</ul></div>`;
+
+  if (v && KEYWORDS[v]) {
+    h += `<div class="card"><h3 style="margin-top:0">${tx({ de: "Keywording-Vorschlag", en: "Keywording suggestion" })}</h3>` +
+      `<p class="sub">${tx({ de: "Basierend auf deiner Planner-Auswahl. Muster: Motiv + Aktivität + Tageszeit + Landschaft + Stimmung.", en: "Based on your planner selection. Pattern: subject + activity + time + landscape + mood." })}</p>` +
+      `<div class="box info"><span class="lbl">${tx({ de: "Start-Keywords", en: "Starter keywords" })}</span><code>${KEYWORDS[v]}</code></div></div>`;
+  } else {
+    h += `<div class="box tip"><span class="lbl">${tx({ de: "Tipp", en: "Tip" })}</span>${tx({ de: "Wähle im Setup-Planner ein Vorhaben — dann erscheinen hier passende Keyword-Vorschläge.", en: "Pick a project in the Setup Planner — matching keyword suggestions will appear here." })}</div>`;
+  }
+  return h;
+}
+
+/* ============================================================
+   12. WIRE-UP
+   ============================================================ */
+/* scroll spy: highlight the chapter chip of the section near the top */
+let spyObserver = null;
+function setupScrollSpy() {
+  if (spyObserver) { spyObserver.disconnect(); spyObserver = null; }
+  if (state.route !== "guide") return;
+  const chips = {};
+  $$(".chip").forEach(c => { chips[c.dataset.jump] = c; });
+  const secs = $$('[id^="sec-"]');
+  if (!secs.length) return;
+  spyObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      Object.keys(chips).forEach(k => chips[k].classList.remove("active"));
+      const chip = chips[e.target.id];
+      if (!chip) return;
+      chip.classList.add("active");
+      const nav = chip.parentElement;
+      const navR = nav.getBoundingClientRect(), chipR = chip.getBoundingClientRect();
+      nav.scrollLeft += (chipR.left - navR.left) - (nav.clientWidth - chip.clientWidth) / 2;
+    });
+  }, { rootMargin: "-78px 0px -72% 0px", threshold: 0 });
+  secs.forEach(s => spyObserver.observe(s));
+}
+
+function renderPage() {
+  const c = el("content");
+  if (state.route === "guide")      c.innerHTML = renderGuide();
+  else if (state.route === "planner")   c.innerHTML = renderPlanner();
+  else if (state.route === "cheatsheet") c.innerHTML = renderCheatsheet();
+  else if (state.route === "postshoot")  c.innerHTML = renderPostshoot();
+
+  /* guide: chapter jump */
+  $$("[data-jump]").forEach(c => c.onclick = () => {
+    const t = el(c.dataset.jump);
+    if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  /* guide: scene drilldown */
+  $$("[data-scene]").forEach(t => t.onclick = () => { state.sceneOpen = t.dataset.scene; renderPage(); window.scrollTo(0, 0); });
+  const sb = $("[data-scene-back]");
+  if (sb) sb.onclick = () => { state.sceneOpen = null; renderPage(); const sec = el("sec-scenes"); if (sec) sec.scrollIntoView({ block: "start" }); };
+
+  /* planner option clicks */
+  $$(".opt").forEach(b => b.onclick = () => {
+    state.planner[b.dataset.q] = b.dataset.v;
+    renderPage();
+  });
+  const reset = el("planner-reset");
+  if (reset) reset.onclick = () => { state.planner = { vorhaben: null, tageszeit: null, umgebung: null, montage: null }; renderPage(); };
+
+  /* checklist persistence */
+  $$("[data-ck]").forEach(box => box.onchange = () => {
+    state.checks[box.dataset.ck] = box.checked;
+    localStorage.setItem("x5_checks", JSON.stringify(state.checks));
+    box.closest("li").classList.toggle("done", box.checked);
+  });
+
+  setupScrollSpy();
+}
+
+function renderAll() {
+  applyChrome();
+  refreshToggles();
+  buildNav();
+  renderPage();
+}
+
+/* init */
+document.documentElement.setAttribute("data-theme", state.theme);
+document.documentElement.lang = state.lang;
+renderAll();
+</script>
+
+
+</body>
+</html>

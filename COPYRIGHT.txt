@@ -1,0 +1,47 @@
+====================================================================
+ X5 FIELD COMPANION - COPYRIGHT & LICENSE
+====================================================================
+
+Created by mindricS
+https://linktr.ee/mindrics
+
+--------------------------------------------------------------------
+ DEUTSCH
+--------------------------------------------------------------------
+Dieses Tool wird kostenlos zur Verfuegung gestellt.
+
+Du darfst es:
+  - privat und kommerziell nutzen
+  - frei weitergeben und teilen
+
+Bitte beachte:
+  - Der Urheber-Hinweis "Built by mindricS" und der Link sollen
+    erhalten bleiben.
+  - Keine Gewaehr fuer Richtigkeit oder Eignung. Nutzung auf
+    eigenes Risiko - Kameraeinstellungen immer selbst pruefen.
+
+"Insta360" und "X5" sind Marken ihrer jeweiligen Inhaber. Dieses
+Tool ist ein inoffizielles, unabhaengiges Hilfsmittel und steht in
+keiner Verbindung zu Insta360 / Arashi Vision.
+
+--------------------------------------------------------------------
+ ENGLISH
+--------------------------------------------------------------------
+This tool is provided free of charge.
+
+You may:
+  - use it privately and commercially
+  - share and redistribute it freely
+
+Please note:
+  - Keep the "Built by mindricS" credit and link intact.
+  - Provided "as is", without warranty of any kind. Use at your
+    own risk - always verify camera settings yourself.
+
+"Insta360" and "X5" are trademarks of their respective owners. This
+tool is an unofficial, independent companion and is not affiliated
+with Insta360 / Arashi Vision.
+
+====================================================================
+ (c) mindricS - https://linktr.ee/mindrics
+====================================================================

@@ -1,0 +1,19 @@
+# local tooling / editor
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# marketing / distribution material and personal notes
+Startprompt*.txt
+IMAGE_PROMPTS.txt
+LISTING_COPY.txt
+SCREENSHOT_LIST.txt
+x5-field-companion.zip
+Für Verkauf/
+Fuer Verkauf/
+
+# the original third-party guide this project replaced
+insta360-x5-guide.html
