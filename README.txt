@@ -1,7 +1,7 @@
 ====================================================================
  X5 FIELD COMPANION
  Insta360 X5 - Guide & Setup Planner
- Built by mindricS  |  https://linktr.ee/mindrics
+ Built by mindric lab  |  https://www.mindriclab.de
 ====================================================================
 
 --------------------------------------------------------------------

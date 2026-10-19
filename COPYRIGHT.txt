@@ -2,8 +2,8 @@
  X5 FIELD COMPANION - COPYRIGHT & LICENSE
 ====================================================================
 
-Created by mindricS
-https://linktr.ee/mindrics
+Created by mindric lab
+https://www.mindriclab.de
 
 --------------------------------------------------------------------
  DEUTSCH
@@ -15,7 +15,7 @@ Du darfst es:
   - frei weitergeben und teilen
 
 Bitte beachte:
-  - Der Urheber-Hinweis "Built by mindricS" und der Link sollen
+  - Der Urheber-Hinweis "Built by mindric lab" und der Link sollen
     erhalten bleiben.
   - Keine Gewaehr fuer Richtigkeit oder Eignung. Nutzung auf
     eigenes Risiko - Kameraeinstellungen immer selbst pruefen.
@@ -34,7 +34,7 @@ You may:
   - share and redistribute it freely
 
 Please note:
-  - Keep the "Built by mindricS" credit and link intact.
+  - Keep the "Built by mindric lab" credit and link intact.
   - Provided "as is", without warranty of any kind. Use at your
     own risk - always verify camera settings yourself.
 
@@ -43,5 +43,5 @@ tool is an unofficial, independent companion and is not affiliated
 with Insta360 / Arashi Vision.
 
 ====================================================================
- (c) mindricS - https://linktr.ee/mindrics
+ (c) mindric lab - https://www.mindriclab.de
 ====================================================================
