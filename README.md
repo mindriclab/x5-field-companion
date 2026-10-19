@@ -13,7 +13,9 @@ Plus a cheat sheet and a post-shoot checklist. German and English, dark and ligh
 
 ## Use it
 
-Download `X5-Field-Companion.html` and open it in any current browser (Chrome, Edge, Firefox, Safari). That is all. Language and theme switch bottom-left.
+Download `X5-Field-Companion.html` and open it in any current browser (Chrome, Edge, Firefox, Safari). That is all.
+
+Prefer a one-click download as a ZIP? It is also free on Gumroad, pay what you want: [mindriclab.gumroad.com/l/x5-field-companion](https://mindriclab.gumroad.com/l/x5-field-companion). Language and theme switch bottom-left.
 
 ## Why no AI
 
